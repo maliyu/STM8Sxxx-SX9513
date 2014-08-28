@@ -1,3 +1,4 @@
 This is Semtech SX9513 cap-touch controller on STM8S discovery kit. 
 
 <v1.0.0> Orignal version. The code is not implemented yet.
+<v2.0.0> Implement soft-I2C for STM8S105C6 and LED control. 

@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s_it.h"
+#include "misc.h"
 
 /** @addtogroup I2C_EEPROM
   * @{
@@ -65,9 +66,7 @@ INTERRUPT_HANDLER_TRAP(TRAP_IRQHandler)
   */
 INTERRUPT_HANDLER(TLI_IRQHandler, 0)
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+  SX9513_Handler();
 }
 
 /**
@@ -137,9 +136,7 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
   */
 INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+  
 }
 
 /**
@@ -339,9 +336,7 @@ INTERRUPT_HANDLER(TIM1_CAP_COM_IRQHandler, 12)
   */
 INTERRUPT_HANDLER(I2C_IRQHandler, 19)
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+  
 }
 
 #if defined (STM8S105) || defined (STM8AF626x)

@@ -481,7 +481,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>STM8Sxxx-SX9513.hex</state>
+          <state>EWSTM8_project.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1573,10 +1573,19 @@
   <group>
     <name>Include Files</name>
     <file>
+      <name>$PROJ_DIR$\..\inc\misc.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\inc\soft_i2c.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\inc\stm8s_conf.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\inc\stm8s_it.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\inc\sx9513.h</name>
     </file>
   </group>
   <group>
@@ -1585,7 +1594,16 @@
       <name>$PROJ_DIR$\..\src\main.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\src\misc.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\soft_i2c.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\src\stm8s_it.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\src\sx9513.c</name>
     </file>
   </group>
   <group>
@@ -1593,13 +1611,34 @@
     <group>
       <name>inc</name>
       <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\inc\stm8s.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\inc\stm8s_clk.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\inc\stm8s_exti.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\inc\stm8s_gpio.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\inc\stm8s_i2c.h</name>
       </file>
     </group>
     <group>
       <name>src</name>
       <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\src\stm8s_clk.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\src\stm8s_exti.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\src\stm8s_gpio.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\Libraries\STM8S_StdPeriph_Driver\src\stm8s_i2c.c</name>
       </file>
     </group>
   </group>

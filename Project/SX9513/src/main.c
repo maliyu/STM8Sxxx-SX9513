@@ -22,17 +22,59 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s.h"
+#include "sx9513.h"
+//#include "myI2C.h"
+#include "soft_i2c.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+static uint32_t cnt = 0;
+
 void main(void)
-{    
-/* Infinite loop */
+{   
+  /* disable interrupts */
+  disableInterrupts();
+    
+  /* Set clock as internal 16Mhz clock */
+  CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
+  
+  // LD1
+  GPIO_Init(GPIOD, GPIO_PIN_0, GPIO_MODE_OUT_PP_LOW_FAST);
+  
+  /* set SCL, SDA as output, hiz, open drain, fast */
+  //GPIO_Init(PORT_SCL, PIN_SCL, GPIO_MODE_OUT_OD_HIZ_FAST);
+  //GPIO_Init(PORT_SDA, PIN_SDA, GPIO_MODE_OUT_OD_HIZ_FAST);
+  
+  /* PD7 as NRIQ of SX9513 */
+  GPIO_Init(PORT_NIRQ, PIN_NIRQ, GPIO_MODE_IN_PU_IT);
+  /* wait until NIRQ pin become high */
+  //while(GPIO_ReadInputPin(PORT_NIRQ, PIN_NIRQ) == RESET);
+  //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_FALL_ONLY);
+  EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_FALL_ONLY);
+  
+  /* I2C init */
+  //I2C_DeInit();
+  //I2C_Init(FASTSPEED, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, CLK_GetClockFreq()/1000000);
+  //I2C_Cmd(ENABLE);
+  //I2C_ITConfig((I2C_IT_TypeDef)(I2C_IT_EVT | I2C_IT_BUF) , ENABLE);
+  //myI2C_Init();
+  Soft_I2C_Int();
+  
+  SX9513_Init();
+  
+  /* enable interrupts */
+  enableInterrupts();
+  
+  /* Infinite loop */
   while (1)
   {
-    
+    if(cnt++>500000)
+    {
+      GPIO_WriteReverse(GPIOD, GPIO_PIN_0);
+      cnt = 0;
+    }
   }
 }
 
