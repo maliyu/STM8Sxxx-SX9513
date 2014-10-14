@@ -14,7 +14,8 @@
 #include "soft_i2c.h"
 #include "misc.h"
 
-void Soft_I2C_Int(void)
+#ifdef SOFT_I2C
+void Soft_I2C_Init(void)
 {
   Set_I2C_SCL_Out;
   Set_I2C_SDA_Out;
@@ -149,3 +150,4 @@ u8 Soft_I2C_Read_Byte(void)
   }
   return Receive_Byte;
 }
+#endif

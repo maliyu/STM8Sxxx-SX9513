@@ -25,8 +25,10 @@
 #include "sx9513.h"
 //#include "myI2C.h"
 #include "soft_i2c.h"
+#include "misc.h"
 
 /* Private defines -----------------------------------------------------------*/
+#define FIRMWARE_VERSION        "2.1.0"
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -43,10 +45,6 @@ void main(void)
   // LD1
   GPIO_Init(GPIOD, GPIO_PIN_0, GPIO_MODE_OUT_PP_LOW_FAST);
   
-  /* set SCL, SDA as output, hiz, open drain, fast */
-  //GPIO_Init(PORT_SCL, PIN_SCL, GPIO_MODE_OUT_OD_HIZ_FAST);
-  //GPIO_Init(PORT_SDA, PIN_SDA, GPIO_MODE_OUT_OD_HIZ_FAST);
-  
   /* PD7 as NRIQ of SX9513 */
   GPIO_Init(PORT_NIRQ, PIN_NIRQ, GPIO_MODE_IN_PU_IT);
   /* wait until NIRQ pin become high */
@@ -55,12 +53,25 @@ void main(void)
   EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_FALL_ONLY);
   
   /* I2C init */
-  //I2C_DeInit();
-  //I2C_Init(FASTSPEED, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, CLK_GetClockFreq()/1000000);
-  //I2C_Cmd(ENABLE);
-  //I2C_ITConfig((I2C_IT_TypeDef)(I2C_IT_EVT | I2C_IT_BUF) , ENABLE);
-  //myI2C_Init();
-  Soft_I2C_Int();
+#ifdef SOFT_I2C
+  Soft_I2C_Init();
+#else
+  I2C_Cmd(DISABLE);
+  CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, DISABLE);
+  //GPIO_Init(PORT_SCL, PIN_SCL, GPIO_MODE_IN_FL_NO_IT);
+  //GPIO_Init(PORT_SDA, PIN_SDA, GPIO_MODE_IN_FL_NO_IT);
+  GPIO_Init(PORT_SCL, PIN_SCL, GPIO_MODE_OUT_PP_HIGH_FAST);
+  GPIO_Init(PORT_SDA, PIN_SDA, GPIO_MODE_OUT_PP_HIGH_FAST);
+  CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, ENABLE);
+  GPIO_ExternalPullUpConfig(PORT_SCL, PIN_SCL, ENABLE);
+  GPIO_ExternalPullUpConfig(PORT_SDA, PIN_SDA, ENABLE);
+  I2C_Init(STANDARDSPEED, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, CLK_GetClockFreq()/1000000);
+  //I2C_ITConfig(I2C_IT_ERR, ENABLE);
+  //I2C_ITConfig(I2C_IT_EVT, ENABLE);
+  //I2C_ITConfig(I2C_IT_BUF, ENABLE);
+  I2C_AcknowledgeConfig(I2C_ACK_CURR);
+  I2C_Cmd(ENABLE);
+#endif
   
   SX9513_Init();
   
@@ -72,7 +83,10 @@ void main(void)
   {
     if(cnt++>500000)
     {
+      SX9513_Tuner();
+      
       GPIO_WriteReverse(GPIOD, GPIO_PIN_0);
+      
       cnt = 0;
     }
   }

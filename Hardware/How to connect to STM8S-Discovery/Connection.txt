@@ -1,0 +1,7 @@
+1. SX9513 Touch Rev0 board
+14 - VDD
+12 - GND
+10 - NIRQ
+8 - SCL
+6 - SDA
+4 - BUZZER

@@ -13,6 +13,7 @@
 ******************************************************************************/
 #include "stm8s.h"
 #include "sx9513.h"
+#include "misc.h"
 
 static uint8_t IrqSrc;
 static uint8_t PreTouchStatus;
@@ -161,6 +162,10 @@ void SX9513_Handler(void)
 				TimerFunc = 0;
 			}
 		}
+                
+                /* Trigger compensation on all channels */
+                tmp = SX9513_Read(0x00);
+                SX9513_Write(0x00, tmp | 0x04);
 	}
 	else if((IrqSrc & 0x20) == 0x20)
 	{
@@ -175,3 +180,17 @@ void SX9513_Handler(void)
 	
 	PreTouchStatus = TouchStatus;
 }
+
+#ifdef SX9513_TUNE
+void SX9513_Tuner(void)
+{
+  CapSenseUsefulDataMsb = SX9513_Read(0x64);
+  CapSenseUsefulDataLsb = SX9513_Read(0x65);
+  CapSenseAverageDataMsb = SX9513_Read(0x66);
+  CapSenseAverageDataLsb = SX9513_Read(0x67);
+  CapSenseDiffDataMsb = SX9513_Read(0x68);
+  CapSenseDiffDataLsb = SX9513_Read(0x69);
+  CapSenseCompMsb = SX9513_Read(0x6A);
+  CapSenseCompLsb = SX9513_Read(0x6B);
+}
+#endif

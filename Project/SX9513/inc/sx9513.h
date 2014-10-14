@@ -14,10 +14,10 @@
 
 #define PORT_NIRQ       GPIOD
 #define PIN_NIRQ        GPIO_PIN_7
-#define PORT_SCL        GPIOE
-#define PIN_SCL         GPIO_PIN_1
-#define PORT_SDA        GPIOE
-#define PIN_SDA         GPIO_PIN_2
+#define PORT_SCL        GPIOB
+#define PIN_SCL         GPIO_PIN_4
+#define PORT_SDA        GPIOB
+#define PIN_SDA         GPIO_PIN_5
 
 typedef enum{
   STANDARDSPEED=100000,

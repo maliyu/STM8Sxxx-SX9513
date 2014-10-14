@@ -15,7 +15,7 @@
 //#define Set_I2C_SDA_In       GPIO_Init(I2C_PIN, I2C_SDA, GPIO_MODE_IN_FL_NO_IT)
 #define Set_I2C_SDA_In       GPIO_Init(I2C_PIN, I2C_SDA, GPIO_MODE_IN_PU_NO_IT)
 
-void Soft_I2C_Int(void);
+void Soft_I2C_Init(void);
 void Soft_I2C_Start(void);
 void Soft_I2C_Stop(void);
 void Soft_I2C_Ack(void);

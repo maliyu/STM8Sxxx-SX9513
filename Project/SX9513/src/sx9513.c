@@ -12,15 +12,9 @@
 #include "stm8s.h"
 //#include "myI2C.h"
 #include "soft_i2c.h"
+#include "misc.h"
 
 #define SX9513_I2C_ADDRESS      (0x2B<<1)
-
-//#define PORT_NIRQ       GPIOD
-//#define PIN_NIRQ        GPIO_PIN_7
-//#define PORT_SCL        GPIOE
-//#define PIN_SCL         GPIO_PIN_1
-//#define PORT_SDA        GPIOE
-//#define PIN_SDA         GPIO_PIN_2
 
 typedef struct 
 {
@@ -110,6 +104,7 @@ typedef struct
   uint8_t I2CSoftReset; // 0xFF
 }SX9513_Reg_Def;
 
+#ifdef SOFT_I2C
 uint8_t SX9513_Read(uint8_t reg)
 {
   uint8_t rxData = 0;
@@ -140,6 +135,155 @@ void SX9513_Write(uint8_t reg, uint8_t data)
   Soft_I2C_Ack();		/*I2C_Ack*/
   Soft_I2C_Stop();	/*I2C Stop*/
 }
+#else // STM8S Hard I2C
+uint8_t SX9513_Read(uint8_t reg)
+{
+#if 0
+  uint8_t rxData;
+  
+  /* wait for I2C bus to be free */
+  while(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY));
+	
+  /* I2C start */
+  I2C_GenerateSTART(ENABLE);
+	
+  /* STM8S I2C EV5 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_MODE_SELECT));
+  I2C_ClearFlag(I2C_FLAG_ACKNOWLEDGEFAILURE);
+        
+  /* Set slave adress and I2C master write mode */
+  I2C_Send7bitAddress(SX9513_I2C_ADDRESS, I2C_DIRECTION_TX);
+
+  /* STM8S EV6 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+	
+  I2C_Cmd(ENABLE);
+
+  I2C_SendData(reg);
+	
+  /* STM8S EV8_2 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+	
+  /* I2C start */ 
+  I2C_GenerateSTART(ENABLE);
+	
+  /* STM8S EV5 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_MODE_SELECT));
+	
+  /* Set slave adress and I2C master read mode */
+  I2C_Send7bitAddress(SX9513_I2C_ADDRESS, I2C_DIRECTION_RX);
+	
+  /* STM8S EV6 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
+	
+  /* STM8S EV7 */
+  while(!I2C_CheckEvent(I2C_EVENT_MASTER_BYTE_RECEIVED));
+  rxData = I2C_ReceiveData();
+	
+  I2C_AcknowledgeConfig(I2C_ACK_NONE);
+	
+  /* I2C stop */
+  I2C_GenerateSTOP(ENABLE);
+  
+  return rxData;
+#else
+  uint8_t rxData;
+  
+  /* check if I2C bus is busy */
+  while(I2C->SR3 & 0x02);
+  
+  /* Generate start bit */
+  I2C->CR2 |= 0x01;
+  
+  /* EV5¡GSB=1 */
+  while(!(I2C->SR1 & 0x01));
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  
+  /* Set slave adress and I2C master write mode */
+  I2C->DR = SX9513_I2C_ADDRESS;
+  
+  /* wait for end of address transmission */
+  while(!(I2C->SR1 & 0x02));
+  
+  I2C->SR1;
+  I2C->SR3;
+  
+  /* Send register address */
+  I2C->DR = reg;
+  
+  /* EV8_2 TxE=1 ¡ABTF=1 */
+  while(!(I2C->SR1 & 0x84));
+  
+  /* Regenrate start bit */
+  I2C->CR2 |= 0x01;
+  
+  /* EV5¡GSB=1 */
+  while(!(I2C->SR1 & 0x01));
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  asm("nop");
+  
+  /* Set slave adress and I2C master read mode */
+  I2C->DR = (SX9513_I2C_ADDRESS|0x01);
+  
+  /* wait for end of address transmission */
+  while(!(I2C->SR1 & 0x02));
+  
+  I2C->SR1;
+  I2C->SR3;
+  
+  /* Wait for RX data */
+  while(!(I2C->SR1 & 0x40));
+  rxData = I2C->DR;
+  
+  /* Disable ACK */
+  I2C->CR2 &= ~0x04;
+  
+  /* Generate stop bit */
+  I2C->CR2 |= 0x02;
+  
+  return rxData;
+#endif
+}
+
+void SX9513_Write(uint8_t reg, uint8_t data)
+{
+  /* Wait for I2C bus to be free */
+  while(I2C_GetFlagStatus(I2C_FLAG_BUSBUSY));
+	
+  /* I2C start */
+  I2C_GenerateSTART(ENABLE);
+	
+  /* STM8S EV5 */ 
+  while(!I2C_CheckEvent(I2C_EVENT_MASTER_MODE_SELECT)); 
+	
+  /* Set slave address and I2C master write mode */
+  I2C_Send7bitAddress(SX9513_I2C_ADDRESS, I2C_DIRECTION_TX);
+	
+  /* STM8S EV6 */
+  while(!I2C_CheckEvent(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+	 
+  /* send register address to slave */
+  I2C_SendData(reg);
+  /* STM8S EV8 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_BYTE_TRANSMITTING));
+	
+  /* Send data to slave */
+  I2C_SendData(data); 
+	
+  /* STM8S EV8 */
+  while (!I2C_CheckEvent(I2C_EVENT_MASTER_BYTE_TRANSMITTED)); 
+	
+  /* I2C stop */
+  I2C_GenerateSTOP(ENABLE);
+}
+#endif
 
 //static SX9513_Reg_Def sx9513_reg;
 /* 
@@ -169,21 +313,22 @@ void SX9513_Init(void)
 	SX9513_Write(0x25, 0x83);
 	SX9513_Write(0x26, 0x83);
 	SX9513_Write(0x27, 0x43);
-	SX9513_Write(0x28, 0x60);
-	SX9513_Write(0x29, 0x60);
-	SX9513_Write(0x2A, 0x60);
-	SX9513_Write(0x2B, 0x60);
+	SX9513_Write(0x28, 0x01);
+	SX9513_Write(0x29, 0x01);
+	SX9513_Write(0x2A, 0x01);
+	SX9513_Write(0x2B, 0x01);
 	SX9513_Write(0x2C, 0x60);
 	SX9513_Write(0x2D, 0x60);
 	SX9513_Write(0x2E, 0x60);
 	SX9513_Write(0x2F, 0x60);
 	SX9513_Write(0x30, 0x10);
 	SX9513_Write(0x31, 0x14);
-	SX9513_Write(0x33, 0x05);
+        SX9513_Write(0x32, 0xCC);
+	SX9513_Write(0x33, 0x00);
 	SX9513_Write(0x34, 0x40);
 	SX9513_Write(0x35, 0x40);
-	SX9513_Write(0x36, 0x1D);
-	SX9513_Write(0x37, 0x1A);
+	SX9513_Write(0x36, 0x05);
+	SX9513_Write(0x37, 0x02);
 	SX9513_Write(0x38, 0x00);
 	SX9513_Write(0x3B, 0x00);
 	SX9513_Write(0x3E, 0xFF);
